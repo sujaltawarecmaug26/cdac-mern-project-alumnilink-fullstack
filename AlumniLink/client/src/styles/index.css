@@ -1,0 +1,37 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --cream: #fff8f1;
+  --sand: #f1e3d3;
+  --primary: #9f1239;
+  --wine: #6b0f2a;
+  --gold: #d97706;
+  --cocoa: #2b1b17;
+  --muted: #8b7766;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: var(--cream);
+  color: var(--cocoa);
+  font-family: Inter, system-ui, sans-serif;
+}
+
+h1,
+h2,
+h3,
+.font-display {
+  font-family: 'Playfair Display', serif;
+}
+
+@layer components {
+  .nav-link {
+    @apply text-sm font-medium text-cocoa/80 hover:text-primary transition-colors pb-1;
+  }
+  .nav-link-active {
+    @apply text-primary border-b-2 border-primary;
+  }
+}
