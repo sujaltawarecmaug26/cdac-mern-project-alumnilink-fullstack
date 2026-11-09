@@ -1,52 +1,407 @@
-import { useEffect, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
-import { PageContainer } from '../../components/layout/PageContainer.tsx';
-import { Card } from '../../components/ui/Card.tsx';
-import { Button } from '../../components/ui/Button.tsx';
-import { Textarea } from '../../components/ui/Textarea.tsx';
-import { Skeleton } from '../../components/ui/Skeleton.tsx';
-import { jobsApi } from '../../api/jobs.js';
-import { applicationsApi } from '../../api/applications.js';
-import { useAuth } from '../../hooks/useAuth.js';
-import { useToast } from '../../context/ToastContext.tsx';
+
+import { useEffect, useState } from "react";
+import { useParams, Link } from "react-router-dom";
+import {
+  Alert,
+  Box,
+  Button,
+  Card,
+  CardContent,
+  Chip,
+  CircularProgress,
+  Container,
+  Divider,
+  Stack,
+  TextField,
+  Typography,
+} from "@mui/material";
+import { jobsApi } from "../../api/jobs.js";
+import { applicationsApi } from "../../api/applications.js";
+import { useAuth } from "../../hooks/useAuth.js";
+import { useToast } from "../../context/ToastContext.tsx";
 
 export default function JobDetail() {
   const { id } = useParams();
   const { user } = useAuth();
   const toast = useToast();
+
   const [data, setData] = useState(null);
-  const [note, setNote] = useState('');
+  const [note, setNote] = useState("");
   const [contact, setContact] = useState(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
-  const load = () => jobsApi.get(id).then(r => setData(r.data)).catch(e => toast.error(e.response?.data?.message || 'Job not found')).finally(() => setLoading(false));
-  useEffect(() => { load(); }, [id]);
-  if (loading) return <PageContainer><Skeleton className="h-72"/></PageContainer>;
-  if (!data?.job) return <PageContainer><p className="text-danger">Job not found.</p><Link className="text-primary underline" to="/jobs">Back to jobs</Link></PageContainer>;
+  const [contactLoading, setContactLoading] = useState(false);
+
+  const load = () =>
+    jobsApi
+      .get(id)
+      .then((r) => setData(r.data))
+      .catch((e) =>
+        toast.error(e.response?.data?.message || "Job not found")
+      )
+      .finally(() => setLoading(false));
+
+  useEffect(() => {
+    setLoading(true);
+    load();
+  }, [id]);
+
+  const handleApply = async (e) => {
+    e.preventDefault();
+
+    try {
+      setSubmitting(true);
+
+      await jobsApi.apply(id, { note });
+
+      toast.success("Application submitted");
+      await load();
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Could not apply");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleViewContact = async () => {
+    try {
+      setContactLoading(true);
+
+      const r = await applicationsApi.contact(application._id);
+      setContact(r.data);
+    } catch (e) {
+      toast.error(e.response?.data?.message || "Contact unavailable");
+    } finally {
+      setContactLoading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <Container maxWidth="lg" sx={{ py: 4 }}>
+        <Box sx={{ display: "flex", justifyContent: "center", py: 8 }}>
+          <CircularProgress sx={{ color: "#9F1239" }} />
+        </Box>
+      </Container>
+    );
+  }
+
+  if (!data?.job) {
+    return (
+      <Container maxWidth="lg" sx={{ py: 4 }}>
+        <Alert severity="error" sx={{ mb: 2 }}>
+          Job not found.
+        </Alert>
+
+        <Button
+          component={Link}
+          to="/jobs"
+          sx={{ color: "#9F1239", textTransform: "none" }}
+        >
+          Back to jobs
+        </Button>
+      </Container>
+    );
+  }
+
   const { job, alumniProfile, application } = data;
-  return <PageContainer>
-    <div className="grid gap-5 lg:grid-cols-[1.5fr_1fr]">
-      <Card className="p-6">
-        <p className="text-sm font-semibold text-primary">{job.company}</p><h1 className="mt-1 font-display text-3xl">{job.title}</h1>
-        <p className="mt-3 text-sm text-muted">{job.location} · {job.experience} · Posted by {job.alumniId?.name || 'Verified alumnus'}</p>
-        <h2 className="mt-7 font-semibold">About this role</h2><p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-muted">{job.description}</p>
-        <h2 className="mt-6 font-semibold">Skills required</h2><div className="mt-2 flex flex-wrap gap-2">{(job.skills || []).map(s => <span key={s} className="rounded-full bg-sand px-3 py-1 text-xs">{s}</span>)}</div>
-        {job.jobUrl && <p className="mt-5"><a className="text-sm text-primary underline" href={job.jobUrl} target="_blank" rel="noreferrer">Company job listing</a></p>}
-        <div className="mt-7 rounded-xl bg-sand/50 p-4"><p className="font-semibold">{job.alumniId?.name}</p><p className="text-sm text-muted">{alumniProfile?.designation} · {alumniProfile?.company || job.company}</p><p className="mt-2 text-xs text-success">Verified alumnus</p></div>
-      </Card>
-      <Card className="h-fit p-5">
-        <h2 className="font-display text-xl">Apply for this job</h2>
-        {user?.role !== 'student' ? <p className="mt-3 text-sm text-muted">Only students can apply.</p> :
-          application ? <div className="mt-4 rounded-xl bg-sand/50 p-4"><p className="font-semibold">You have already applied</p><p className="mt-1 text-sm capitalize text-muted">Status: {application.status}</p><Link className="mt-3 inline-block text-sm text-primary underline" to="/applications">View my applications</Link></div> :
-          <form className="mt-4 space-y-3" onSubmit={async e => { e.preventDefault(); setSubmitting(true); try { await jobsApi.apply(id, { note }); toast.success('Application submitted'); await load(); } catch(err) { toast.error(err.response?.data?.message || 'Could not apply'); } finally { setSubmitting(false); } }}>
-            <p className="text-sm text-muted">Your saved PDF resume will be attached automatically. Make sure it is uploaded in your profile.</p>
-            <Textarea label="Note to alumnus (optional)" rows={4} value={note} onChange={e => setNote(e.target.value)} />
-            <Button type="submit" disabled={submitting || job.status !== 'open'}>{submitting ? 'Submitting...' : 'Submit application'}</Button>
-            <Link className="block text-xs text-primary underline" to="/profile">Manage my profile and resume</Link>
-          </form>}
-        {application?.status === 'approved' && <div className="mt-4"><Button variant="outline" onClick={async () => { try { const r = await applicationsApi.contact(application._id); setContact(r.data); } catch(e) { toast.error(e.response?.data?.message || 'Contact unavailable'); } }}>View alumni contact</Button></div>}
-        {contact && <div className="mt-3 rounded-xl bg-green-50 p-3 text-sm"><p className="font-semibold">{contact.name}</p><p>{contact.email || 'Email not provided'}</p><p>{contact.phone || 'Phone not provided'}</p>{contact.linkedin && <a className="text-primary underline" href={contact.linkedin} target="_blank" rel="noreferrer">LinkedIn</a>}</div>}
-      </Card>
-    </div>
-  </PageContainer>;
+
+  return (
+    <Container maxWidth="lg" sx={{ py: 4 }}>
+      <Box
+        sx={{
+          display: "grid",
+          gridTemplateColumns: { xs: "1fr", lg: "1.5fr 1fr" },
+          gap: 3,
+          alignItems: "start",
+        }}
+      >
+        {/* Job Details */}
+        <Card
+          sx={{
+            borderRadius: 3,
+            border: "1px solid #F1E3D3",
+            boxShadow: "0 3px 12px rgba(43, 27, 23, 0.05)",
+          }}
+        >
+          <CardContent sx={{ p: { xs: 2, sm: 3 } }}>
+            <Typography
+              sx={{ color: "#9F1239", fontWeight: 600 }}
+            >
+              {job.company}
+            </Typography>
+
+            <Typography
+              variant="h4"
+              sx={{
+                mt: 1,
+                fontFamily: "Playfair Display, serif",
+                fontWeight: 700,
+                color: "#2B1B17",
+              }}
+            >
+              {job.title}
+            </Typography>
+
+            <Typography sx={{ mt: 2, color: "#8B7766", fontSize: 14 }}>
+              {job.location} · {job.experience} · Posted by{" "}
+              {job.alumniId?.name || "Verified alumnus"}
+            </Typography>
+
+            <Divider sx={{ my: 3, borderColor: "#F1E3D3" }} />
+
+            {/* Description */}
+            <Typography variant="h6" sx={{fontWeight :700}}>
+              About this role
+            </Typography>
+
+            <Typography
+              sx={{
+                mt: 1,
+                color: "#8B7766",
+                fontSize: 14,
+                lineHeight: 1.8,
+                whiteSpace: "pre-wrap",
+              }}
+            >
+              {job.description}
+            </Typography>
+
+            {/* Skills */}
+            <Typography variant="h6" sx={{ mt: 3, fontWeight: 700 }}>
+              Skills required
+            </Typography>
+
+            <Stack
+              direction="row"
+              spacing={1}
+              sx={{ mt: 1.5, flexWrap: "wrap" }}
+            >
+              {(job.skills || []).map((skill) => (
+                <Chip
+                  key={skill}
+                  label={skill}
+                  size="small"
+                  sx={{
+                    backgroundColor: "#F1E3D3",
+                    color: "#2B1B17",
+                  }}
+                />
+              ))}
+            </Stack>
+
+            {/* Company Job URL */}
+            {job.jobUrl && (
+              <Box sx={{ mt: 3 }}>
+                <Button
+                  component="a"
+                  href={job.jobUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  sx={{
+                    color: "#9F1239",
+                    textTransform: "none",
+                    p: 0,
+                  }}
+                >
+                  Company job listing
+                </Button>
+              </Box>
+            )}
+
+            {/* Alumni Information */}
+            <Box
+              sx={{
+                mt: 4,
+                p: 2.5,
+                borderRadius: 2,
+                backgroundColor: "#F1E3D3",
+              }}
+            >
+              <Typography sx={{ fontWeight: 700, color: "#2B1B17" }}>
+                {job.alumniId?.name || "Verified alumnus"}
+              </Typography>
+
+              <Typography sx={{ mt: 0.5, fontSize: 14, color: "#8B7766" }}>
+                {alumniProfile?.designation} ·{" "}
+                {alumniProfile?.company || job.company}
+              </Typography>
+
+              <Chip
+                label="Verified alumnus"
+                size="small"
+                color="success"
+                sx={{ mt: 1.5 }}
+              />
+            </Box>
+          </CardContent>
+        </Card>
+
+        {/* Application Section */}
+        <Card
+          sx={{
+            borderRadius: 3,
+            border: "1px solid #F1E3D3",
+            boxShadow: "0 3px 12px rgba(43, 27, 23, 0.05)",
+          }}
+        >
+          <CardContent sx={{ p: 3 }}>
+            <Typography
+              variant="h5"
+              sx={{
+                fontFamily: "Playfair Display, serif",
+                fontWeight: 700,
+                color: "#2B1B17",
+              }}
+            >
+              Apply for this job
+            </Typography>
+
+            {user?.role !== "student" ? (
+              <Typography sx={{ mt: 2, color: "#8B7766", fontSize: 14 }}>
+                Only students can apply.
+              </Typography>
+            ) : application ? (
+              <Box
+                sx={{
+                  mt: 3,
+                  p: 2.5,
+                  borderRadius: 2,
+                  backgroundColor: "#F1E3D3",
+                }}
+              >
+                <Typography sx={{fontWeight:700}}>
+                  You have already applied
+                </Typography>
+
+                <Typography
+                  sx={{
+                    mt: 1,
+                    color: "#8B7766",
+                    fontSize: 14,
+                    textTransform: "capitalize",
+                  }}
+                >
+                  Status: {application.status}
+                </Typography>
+
+                <Button
+                  component={Link}
+                  to="/applications"
+                  sx={{
+                    mt: 1.5,
+                    color: "#9F1239",
+                    textTransform: "none",
+                    px: 0,
+                  }}
+                >
+                  View my applications
+                </Button>
+              </Box>
+            ) : (
+              <Box component="form" onSubmit={handleApply} sx={{ mt: 3 }}>
+                <Typography sx={{ mb: 2, color: "#8B7766", fontSize: 14 }}>
+                  Your saved PDF resume will be attached automatically. Make
+                  sure it is uploaded in your profile.
+                </Typography>
+
+                <TextField
+                  fullWidth
+                  multiline
+                  rows={4}
+                  label="Note to alumnus (optional)"
+                  value={note}
+                  onChange={(e) => setNote(e.target.value)}
+                />
+
+                <Button
+                  type="submit"
+                  fullWidth
+                  variant="contained"
+                  disabled={submitting || job.status !== "open"}
+                  sx={{
+                    mt: 2,
+                    py: 1.2,
+                    backgroundColor: "#9F1239",
+                    borderRadius: 2,
+                    textTransform: "none",
+                    fontWeight: 600,
+                    "&:hover": {
+                      backgroundColor: "#6B0F2A",
+                    },
+                  }}
+                >
+                  {submitting ? "Submitting..." : "Submit application"}
+                </Button>
+
+                <Button
+                  component={Link}
+                  to="/profile"
+                  sx={{
+                    mt: 1,
+                    color: "#9F1239",
+                    textTransform: "none",
+                    fontSize: 12,
+                  }}
+                >
+                  Manage my profile and resume
+                </Button>
+              </Box>
+            )}
+
+            {/* Approved Application: Alumni Contact */}
+            {application?.status === "approved" && (
+              <Box sx={{ mt: 3 }}>
+                <Button
+                  variant="outlined"
+                  fullWidth
+                  onClick={handleViewContact}
+                  disabled={contactLoading}
+                  sx={{
+                    borderColor: "#9F1239",
+                    color: "#9F1239",
+                    textTransform: "none",
+                  }}
+                >
+                  {contactLoading ? "Loading contact..." : "View alumni contact"}
+                </Button>
+              </Box>
+            )}
+
+            {/* Alumni Contact Details */}
+            {contact && (
+              <Alert severity="success" sx={{ mt: 2 }}>
+                <Typography sx={{ fontWeight: 700 }}>{contact.name}</Typography>
+
+                <Typography variant="body2" sx={{ mt: 0.5 }}>
+                  {contact.email || "Email not provided"}
+                </Typography>
+
+                <Typography variant="body2">
+                  {contact.phone || "Phone not provided"}
+                </Typography>
+
+                {contact.linkedin && (
+                  <Button
+                    component="a"
+                    href={contact.linkedin}
+                    target="_blank"
+                    rel="noreferrer"
+                    sx={{
+                      mt: 1,
+                      p: 0,
+                      color: "#9F1239",
+                      textTransform: "none",
+                    }}
+                  >
+                    LinkedIn
+                  </Button>
+                )}
+              </Alert>
+            )}
+          </CardContent>
+        </Card>
+      </Box>
+    </Container>
+  );
 }
