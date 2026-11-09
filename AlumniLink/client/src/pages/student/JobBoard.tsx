@@ -1,43 +1,278 @@
-import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
-import { PageContainer } from '../../components/layout/PageContainer.tsx';
-import { Card } from '../../components/ui/Card.tsx';
-import { Input } from '../../components/ui/Input.tsx';
-import { Button } from '../../components/ui/Button.tsx';
-import { Skeleton } from '../../components/ui/Skeleton.tsx';
-import { EmptyState } from '../../components/ui/EmptyState.tsx';
-import { jobsApi } from '../../api/jobs.js';
+
+import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import {
+  Alert,
+  Box,
+  Button,
+  Card,
+  CardContent,
+  Chip,
+  CircularProgress,
+  Container,
+  Grid,
+  Stack,
+  TextField,
+  Typography,
+} from "@mui/material";
+import { jobsApi } from "../../api/jobs.js";
 
 export default function JobBoard() {
-  const [q, setQ] = useState('');
+  const [q, setQ] = useState("");
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
+
   useEffect(() => {
     let active = true;
-    setLoading(true); setError('');
-    const timer = setTimeout(() => jobsApi.list({ q, limit: 30 })
-      .then(res => { if (active) setItems(res.data || []); })
-      .catch(err => { if (active) setError(err.response?.data?.message || 'Could not load jobs'); })
-      .finally(() => { if (active) setLoading(false); }), 250);
-    return () => { active = false; clearTimeout(timer); };
+
+    setLoading(true);
+    setError("");
+
+    const timer = setTimeout(() => {
+      jobsApi
+        .list({ q, limit: 30 })
+        .then((res) => {
+          if (active) setItems(res.data || []);
+        })
+        .catch((err) => {
+          if (active) {
+            setError(
+              err.response?.data?.message || "Could not load jobs"
+            );
+          }
+        })
+        .finally(() => {
+          if (active) setLoading(false);
+        });
+    }, 250);
+
+    return () => {
+      active = false;
+      clearTimeout(timer);
+    };
   }, [q]);
-  return <PageContainer>
-    <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-      <div><p className="text-sm font-semibold uppercase tracking-wide text-primary">Opportunities</p><h1 className="font-display text-3xl">Find your next opportunity</h1><p className="mt-1 text-muted">Explore jobs shared by verified alumni.</p></div>
-      <div className="w-full sm:max-w-sm"><Input placeholder="Search job title, company or skills..." value={q} onChange={e => setQ(e.target.value)} /></div>
-    </div>
-    {error && <p className="mt-5 text-danger">{error}</p>}
-    {loading ? <div className="mt-6 grid gap-4 md:grid-cols-2"><Skeleton className="h-44"/><Skeleton className="h-44"/></div> : null}
-    {!loading && !error && !items.length ? <div className="mt-6"><EmptyState title="No jobs found" message="Try a different search. Check back later for new opportunities."/></div> : null}
-    <div className="mt-6 grid gap-4 md:grid-cols-2">
-      {items.map(job => <Card key={job._id} className="p-5">
-        <div className="flex items-start justify-between gap-3"><div><h2 className="font-display text-xl">{job.title}</h2><p className="mt-1 text-sm font-medium text-primary">{job.company}</p></div><span className="rounded-full bg-green-50 px-3 py-1 text-xs font-semibold text-success">Open</span></div>
-        <p className="mt-3 text-sm text-muted">{job.location} · {job.experience} · {job.alumniId?.name ? `Posted by ${job.alumniId.name}` : 'Verified alumnus'}</p>
-        <p className="mt-3 line-clamp-3 text-sm text-cocoa">{job.description}</p>
-        <div className="mt-3 flex flex-wrap gap-2">{(job.skills || []).slice(0,5).map(s => <span key={s} className="rounded-full bg-sand px-2.5 py-1 text-xs text-cocoa">{s}</span>)}</div>
-        <div className="mt-5"><Link to={`/jobs/${job._id}`}><Button>View details</Button></Link></div>
-      </Card>)}
-    </div>
-  </PageContainer>;
+
+  return (
+    <Container maxWidth="lg" sx={{ py: 4 }}>
+      {/* Page Heading and Search */}
+      <Stack
+        direction={{ xs: "column", sm: "row" }}
+        spacing={3}
+        sx={{
+          justifyContent: "space-between",
+          alignItems: { xs: "stretch", sm: "flex-end" },
+        }}
+      >
+        <Box>
+          <Typography
+            variant="overline"
+            sx={{
+              color: "#9F1239",
+              fontWeight: 700,
+              letterSpacing: 1.5,
+            }}
+          >
+            Opportunities
+          </Typography>
+
+          <Typography
+            variant="h4"
+            sx={{
+              fontFamily: "Playfair Display, serif",
+              fontWeight: 700,
+              color: "#2B1B17",
+            }}
+          >
+            Find your next opportunity
+          </Typography>
+
+          <Typography sx={{ mt: 1, color: "#8B7766" }}>
+            Explore jobs shared by verified alumni.
+          </Typography>
+        </Box>
+
+        <TextField
+          fullWidth
+          size="small"
+          placeholder="Search job title, company or skills..."
+          value={q}
+          onChange={(e) => setQ(e.target.value)}
+          sx={{
+            maxWidth: { sm: 380 },
+            "& .MuiOutlinedInput-root": {
+              borderRadius: 2,
+              backgroundColor: "#FFFFFF",
+            },
+          }}
+        />
+      </Stack>
+
+      {/* Error Message */}
+      {error && (
+        <Alert severity="error" sx={{ mt: 3 }}>
+          {error}
+        </Alert>
+      )}
+
+      {/* Loading */}
+      {loading && (
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "center",
+            py: 6,
+          }}
+        >
+          <CircularProgress sx={{ color: "#9F1239" }} />
+        </Box>
+      )}
+
+      {/* Empty State */}
+      {!loading && !error && items.length === 0 && (
+        <Card sx={{ mt: 4, borderRadius: 3, border: "1px solid #F1E3D3" }}>
+          <CardContent sx={{ textAlign: "center", py: 5 }}>
+            <Typography variant="h6" sx={{ fontWeight: 600 }}>
+              No jobs found
+            </Typography>
+
+            <Typography sx={{ mt: 1, color: "#8B7766" }}>
+              Try a different search. Check back later for new opportunities.
+            </Typography>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Job Cards */}
+      {!loading && !error && items.length > 0 && (
+        <Grid container spacing={3} sx={{ mt: 1 }}>
+          {items.map((job) => (
+            <Grid size={{ xs: 12, md: 6 }} key={job._id}>
+              <Card
+                sx={{
+                  height: "100%",
+                  borderRadius: 3,
+                  border: "1px solid #F1E3D3",
+                  backgroundColor: "#FFFFFF",
+                  boxShadow: "0 3px 12px rgba(43, 27, 23, 0.05)",
+                  transition: "0.2s",
+                  "&:hover": {
+                    boxShadow: "0 6px 18px rgba(43, 27, 23, 0.10)",
+                    transform: "translateY(-2px)",
+                  },
+                }}
+              >
+                <CardContent sx={{ p: 3 }}>
+                  {/* Job Title and Status */}
+                  <Stack
+                    direction="row"
+                    spacing={2}
+                    sx={{
+                      justifyContent: "space-between",
+                      alignItems: "flex-start",
+                    }}
+                  >
+                    <Box>
+                      <Typography
+                        variant="h6"
+                        sx={{
+                          fontFamily: "Playfair Display, serif",
+                          fontWeight: 700,
+                          color: "#2B1B17",
+                        }}
+                      >
+                        {job.title}
+                      </Typography>
+
+                      <Typography
+                        sx={{
+                          mt: 0.5,
+                          color: "#9F1239",
+                          fontWeight: 600,
+                        }}
+                      >
+                        {job.company}
+                      </Typography>
+                    </Box>
+
+                    <Chip
+                      label="Open"
+                      size="small"
+                      color="success"
+                      sx={{ fontWeight: 600 }}
+                    />
+                  </Stack>
+
+                  {/* Job Information */}
+                  <Typography
+                    variant="body2"
+                    sx={{ mt: 2, color: "#8B7766" }}
+                  >
+                    {job.location} · {job.experience} ·{" "}
+                    {job.alumniId?.name
+                      ? `Posted by ${job.alumniId.name}`
+                      : "Verified alumnus"}
+                  </Typography>
+
+                  {/* Description */}
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      mt: 2,
+                      color: "#2B1B17",
+                      display: "-webkit-box",
+                      WebkitLineClamp: 3,
+                      WebkitBoxOrient: "vertical",
+                      overflow: "hidden",
+                    }}
+                  >
+                    {job.description}
+                  </Typography>
+
+                  {/* Skills */}
+                  <Stack
+                    direction="row"
+                    spacing={1}
+                    sx={{ mt: 2, flexWrap: "wrap" }}
+                  >
+                    {(job.skills || []).slice(0, 5).map((skill) => (
+                      <Chip
+                        key={skill}
+                        label={skill}
+                        size="small"
+                        sx={{
+                          backgroundColor: "#F1E3D3",
+                          color: "#2B1B17",
+                        }}
+                      />
+                    ))}
+                  </Stack>
+
+                  {/* View Details */}
+                  <Box sx={{ mt: 3 }}>
+                    <Button
+                      component={Link}
+                      to={`/jobs/${job._id}`}
+                      variant="contained"
+                      sx={{
+                        backgroundColor: "#9F1239",
+                        borderRadius: 2,
+                        textTransform: "none",
+                        fontWeight: 600,
+                        "&:hover": {
+                          backgroundColor: "#6B0F2A",
+                        },
+                      }}
+                    >
+                      View details
+                    </Button>
+                  </Box>
+                </CardContent>
+              </Card>
+            </Grid>
+          ))}
+        </Grid>
+      )}
+    </Container>
+  );
 }
