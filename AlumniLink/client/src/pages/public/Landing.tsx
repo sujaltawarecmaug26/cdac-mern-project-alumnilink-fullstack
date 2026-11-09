@@ -1,123 +1,341 @@
 import { Link } from "react-router-dom";
-import { PageContainer } from "../../components/layout/PageContainer.tsx";
-import { Button } from "../../components/ui/Button.tsx";
-import { Card } from "../../components/ui/Card.tsx";
-import { Chip } from "../../components/ui/Chip.tsx";
+import {
+  Box,
+  Button,
+  Card,
+  CardContent,
+  Chip,
+  Container,
+  Grid,
+  Stack,
+  Typography,
+} from "@mui/material";
+
 import { useFetch } from "../../hooks/useFetch.js";
 import { alumniApi } from "../../api/alumni.js";
 
 export default function Landing() {
-  const { data: featured, loading } = useFetch(() => alumniApi.featured(), []);
+  const { data: featured, loading } = useFetch(
+    () => alumniApi.featured(),
+    []
+  );
+
+  const steps = [
+    {
+      number: "01",
+      title: "Build your profile",
+      description: "Add your skills and one current PDF resume.",
+    },
+    {
+      number: "02",
+      title: "Explore real opportunities",
+      description: "Browse jobs posted by verified alumni.",
+    },
+    {
+      number: "03",
+      title: "Apply and connect",
+      description: "Track applications and connect after approval.",
+    },
+  ];
+
+  const features = [
+    {
+      title: "Create your profile",
+      description:
+        "Students and alumni create a profile. Alumni accounts are verified by an admin.",
+    },
+    {
+      title: "Share opportunities",
+      description:
+        "Verified alumni post jobs with role details and required skills.",
+    },
+    {
+      title: "Apply with confidence",
+      description:
+        "Students apply using their saved resume and track the decision.",
+    },
+  ];
+
   return (
-    <PageContainer>
-      <section className="overflow-hidden rounded-[28px] bg-gradient-to-br from-primary to-wine p-7 text-white sm:p-12">
-        <div className="grid gap-8 lg:grid-cols-2 lg:items-center">
-          <div>
-            <p className="mb-3 text-sm font-semibold uppercase tracking-[0.18em] text-white/70">
+    <Container maxWidth="lg" sx={{ py: 4 }}>
+      {/* Hero Section */}
+      <Box
+        sx={{
+          overflow: "hidden",
+          borderRadius: 4,
+          p: { xs: 3, sm: 6 },
+          color: "#FFFFFF",
+          background: "linear-gradient(135deg, #9F1239, #6B0F2A)",
+        }}
+      >
+        <Grid container spacing={5} sx={{ alignItems: "center" }}>
+          {/* Hero Content */}
+          <Grid size={{ xs: 12, lg: 6 }}>
+            <Typography
+              variant="overline"
+              sx={{
+                fontWeight: 700,
+                letterSpacing: 2,
+                color: "rgba(255,255,255,0.75)",
+              }}
+            >
               A stronger alumni network
-            </p>
-            <h1 className="font-display text-4xl leading-tight sm:text-5xl">
+            </Typography>
+
+            <Typography
+              variant="h2"
+              sx={{
+                mt: 1,
+                fontSize: { xs: "2.3rem", sm: "3.2rem" },
+                fontWeight: 700,
+                lineHeight: 1.2,
+              }}
+            >
               Your next opportunity starts{" "}
-              <span className="text-amber-300">with your community.</span>
-            </h1>
-            <p className="mt-4 max-w-lg text-white/85">
-              AlumniLink connects students with verified alumni sharing real job
-              opportunities, guidance and professional connections.
-            </p>
-            <div className="mt-7 flex flex-wrap gap-3">
-              <Link to="/register?role=student">
-                <Button variant="gold">Join as a student</Button>
-              </Link>
-              <Link to="/register?role=alumnus">
-                <Button variant="white">Join as an alumnus</Button>
-              </Link>
-            </div>
-          </div>
-          <div className="rounded-2xl border border-white/15 bg-white/10 p-6 backdrop-blur">
-            <p className="font-display text-2xl">A simple path forward</p>
-            <div className="mt-5 space-y-4">
-              {[
-                [
-                  "01",
-                  "Build your profile",
-                  "Add your skills and one current PDF resume.",
-                ],
-                [
-                  "02",
-                  "Explore real opportunities",
-                  "Browse jobs posted by verified alumni.",
-                ],
-                [
-                  "03",
-                  "Apply and connect",
-                  "Track applications and connect after approval.",
-                ],
-              ].map(([n, t, d]) => (
-                <div key={n} className="flex gap-3">
-                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/15 font-semibold">
-                    {n}
-                  </span>
-                  <div>
-                    <p className="font-semibold">{t}</p>
-                    <p className="text-sm text-white/75">{d}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-      <section id="how" className="mt-14">
-        <h2 className="text-center font-display text-3xl text-cocoa">
-          How AlumniLink works
-        </h2>
-        <div className="mt-8 grid gap-4 md:grid-cols-3">
-          {[
-            [
-              "Create your profile",
-              "Students and alumni create a profile. Alumni accounts are verified by an admin.",
-            ],
-            [
-              "Share opportunities",
-              "Verified alumni post jobs with role details and required skills.",
-            ],
-            [
-              "Apply with confidence",
-              "Students apply using their saved resume and track the decision.",
-            ],
-          ].map(([title, text], i) => (
-            <Card key={title} className="p-5">
-              <div className="mb-3 flex h-9 w-9 items-center justify-center rounded-full bg-primary text-sm font-bold text-white">
-                {i + 1}
-              </div>
-              <h3 className="text-lg font-semibold">{title}</h3>
-              <p className="mt-1 text-sm text-muted">{text}</p>
+              <Box component="span" sx={{ color: "#FCD34D" }}>
+                with your community.
+              </Box>
+            </Typography>
+
+            <Typography
+              sx={{
+                mt: 2,
+                maxWidth: 500,
+                color: "rgba(255,255,255,0.85)",
+                lineHeight: 1.8,
+              }}
+            >
+              AlumniLink connects students with verified alumni sharing
+              real job opportunities, guidance and professional connections.
+            </Typography>
+
+            <Stack
+              direction={{ xs: "column", sm: "row" }}
+              spacing={2}
+              sx={{ mt: 4 }}
+            >
+              <Button
+                component={Link}
+                to="/register?role=student"
+                variant="contained"
+                sx={{
+                  backgroundColor: "#D97706",
+                  color: "#FFFFFF",
+                  fontWeight: 600,
+                  px: 3,
+                  py: 1.2,
+                  "&:hover": {
+                    backgroundColor: "#B45309",
+                  },
+                }}
+              >
+                Join as a student
+              </Button>
+
+              <Button
+                component={Link}
+                to="/register?role=alumnus"
+                variant="contained"
+                sx={{
+                  backgroundColor: "#FFFFFF",
+                  color: "#6B0F2A",
+                  fontWeight: 600,
+                  px: 3,
+                  py: 1.2,
+                  "&:hover": {
+                    backgroundColor: "#FFF8F1",
+                  },
+                }}
+              >
+                Join as an alumnus
+              </Button>
+            </Stack>
+          </Grid>
+
+          {/* Hero Steps Card */}
+          <Grid size={{ xs: 12, lg: 6 }}>
+            <Card
+              elevation={0}
+              sx={{
+                backgroundColor: "rgba(255,255,255,0.10)",
+                color: "#FFFFFF",
+                border: "1px solid rgba(255,255,255,0.15)",
+                borderRadius: 3,
+                backdropFilter: "blur(10px)",
+              }}
+            >
+              <CardContent sx={{ p: 3 }}>
+                <Typography variant="h5" sx={{ fontWeight: 700 }}>
+                  A simple path forward
+                </Typography>
+
+                <Stack spacing={3} sx={{ mt: 3 }}>
+                  {steps.map((step) => (
+                    <Stack
+                      key={step.number}
+                      direction="row"
+                      spacing={2}
+                      sx={{ alignItems: "flex-start" }}
+                    >
+                      <Box
+                        sx={{
+                          width: 38,
+                          height: 38,
+                          flexShrink: 0,
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          borderRadius: "50%",
+                          backgroundColor: "rgba(255,255,255,0.15)",
+                          fontWeight: 700,
+                        }}
+                      >
+                        {step.number}
+                      </Box>
+
+                      <Box>
+                        <Typography sx={{ fontWeight: 600 }}>
+                          {step.title}
+                        </Typography>
+
+                        <Typography
+                          variant="body2"
+                          sx={{
+                            mt: 0.5,
+                            color: "rgba(255,255,255,0.75)",
+                          }}
+                        >
+                          {step.description}
+                        </Typography>
+                      </Box>
+                    </Stack>
+                  ))}
+                </Stack>
+              </CardContent>
             </Card>
+          </Grid>
+        </Grid>
+      </Box>
+
+      {/* How AlumniLink Works */}
+      <Box id="how" sx={{ mt: 7 }}>
+        <Typography
+          variant="h4"
+          sx={{ color: "#2B1B17", textAlign: "center", fontWeight: 700 }}
+        >
+          How AlumniLink works
+        </Typography>
+
+        <Grid container spacing={3} sx={{ mt: 3 }}>
+          {features.map((feature, index) => (
+            <Grid size={{ xs: 12, md: 4 }} key={feature.title}>
+              <Card
+                elevation={0}
+                sx={{
+                  height: "100%",
+                  border: "1px solid #F1E3D3",
+                  borderRadius: 3,
+                  backgroundColor: "#FFFFFF",
+                }}
+              >
+                <CardContent sx={{ p: 3 }}>
+                  <Box
+                    sx={{
+                      width: 38,
+                      height: 38,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      borderRadius: 2,
+                      backgroundColor: "#9F1239",
+                      color: "#FFFFFF",
+                      fontWeight: 700,
+                      mb: 2,
+                    }}
+                  >
+                    {index + 1}
+                  </Box>
+
+                  <Typography
+                    variant="h6"
+                    sx={{ color: "#2B1B17", fontWeight: 700 }}
+                  >
+                    {feature.title}
+                  </Typography>
+
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      mt: 1,
+                      color: "#8B7766",
+                      lineHeight: 1.7,
+                    }}
+                  >
+                    {feature.description}
+                  </Typography>
+                </CardContent>
+              </Card>
+            </Grid>
           ))}
-        </div>
-      </section>
-      <section className="mt-12">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <h2 className="font-display text-2xl">Our alumni community</h2>
-          <Link
+        </Grid>
+      </Box>
+
+      {/* Alumni Community */}
+      <Box sx={{ mt: 7 }}>
+        <Stack
+          direction={{ xs: "column", sm: "row" }}
+          spacing={2}
+          sx={{
+            justifyContent: "space-between",
+            alignItems: { xs: "flex-start", sm: "center" },
+          }}
+        >
+          <Typography
+            variant="h5"
+            sx={{ color: "#2B1B17", fontWeight: 700 }}
+          >
+            Our alumni community
+          </Typography>
+
+          <Button
+            component={Link}
             to="/register?role=alumnus"
-            className="text-sm text-primary underline"
+            variant="text"
+            sx={{
+              color: "#9F1239",
+              textDecoration: "underline",
+              textTransform: "none",
+            }}
           >
             Become a member
-          </Link>
-        </div>
-        <div className="mt-4 flex flex-wrap gap-2">
+          </Button>
+        </Stack>
+
+        <Stack
+          direction="row"
+          spacing={1}
+          sx={{ mt: 3, flexWrap: "wrap" }}
+        >
           {loading ? (
-            <p className="text-sm text-muted">Loading alumni...</p>
+            <Typography variant="body2" color="#8B7766">
+              Loading alumni...
+            </Typography>
           ) : (
-            (featured || []).map((a) => (
-              <Chip key={a.id} tone="pink">
-                {a.name} · {a.company}
-              </Chip>
+            (featured || []).map((a: { id: string | number; name: string; company: string }) => (
+              <Chip
+                key={a.id}
+                label={`${a.name} · ${a.company}`}
+                sx={{
+                  backgroundColor: "#FCE7EF",
+                  color: "#9F1239",
+                  fontWeight: 500,
+                  borderRadius: 2,
+                }}
+              />
             ))
           )}
-        </div>
-      </section>
-    </PageContainer>
+        </Stack>
+      </Box>
+    </Container>
   );
 }
