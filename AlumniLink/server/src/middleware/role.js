@@ -1,6 +1,4 @@
 
-/** Restricts a route to one or more roles (FR-AUTH-07). */
-
 export const role = (...roles) => {
   return (req, res, next) => {
     // Check authentication
