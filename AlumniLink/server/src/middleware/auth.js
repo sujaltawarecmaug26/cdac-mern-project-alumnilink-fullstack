@@ -1,11 +1,11 @@
 
 import jwt from "jsonwebtoken";
 import env from "../config/env.js";
-import { query } from "../config/db.js";
+import { pool } from "../config/db.js";
 
 // Find user from database
 const findUser = async (id) => {
-  const rows = await query(
+  const [rows] = await pool.query(
     `SELECT id, name, email, role, batch,
     verify_status AS verifyStatus,
     reject_reason AS rejectReason,
