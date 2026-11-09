@@ -1,6 +1,8 @@
+
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth.js';
-import { Skeleton } from '../ui/Skeleton.tsx';
+import Skeleton from '@mui/material/Skeleton';
+import Box from '@mui/material/Box';
 
 export function ProtectedRoute({ children }) {
   const { user, loading } = useAuth();
@@ -8,15 +10,26 @@ export function ProtectedRoute({ children }) {
 
   if (loading) {
     return (
-      <div className="mx-auto max-w-6xl space-y-3 p-6">
-        <Skeleton className="h-10 w-1/3" />
-        <Skeleton className="h-40 w-full" />
-      </div>
+      <Box sx={{ maxWidth: 1152, mx: 'auto', p: 3 }}>
+        <Skeleton variant="rectangular" width="33%" height={40} />
+        <Skeleton
+          variant="rectangular"
+          width="100%"
+          height={160}
+          sx={{ mt: 2 }}
+        />
+      </Box>
     );
   }
 
   if (!user) {
-    return <Navigate to="/login" replace state={{ from: location.pathname }} />;
+    return (
+      <Navigate
+        to="/login"
+        replace
+        state={{ from: location.pathname }}
+      />
+    );
   }
 
   return children;
