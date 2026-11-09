@@ -71,39 +71,3 @@ export const authenticate = async (req, res, next) => {
     });
   }
 };
-
-// Optional authentication
-export const optionalAuth = async (req, res, next) => {
-  try {
-    const authHeader = req.headers.authorization || "";
-
-    const token = authHeader.startsWith("Bearer ")
-      ? authHeader.slice(7)
-      : null;
-
-    if (token) {
-      try {
-        const payload = jwt.verify(token, env.jwtSecret);
-        const user = await findUser(payload.sub);
-
-        if (user && user.isActive) {
-          user._id = user.id;
-          user.toSafeJSON = () => user;
-
-          req.user = user;
-        }
-      } catch (error) {
-        // Invalid token is ignored in optional authentication
-      }
-    }
-
-    next();
-  } catch (error) {
-    console.error(error);
-
-    return res.status(500).json({
-      success: false,
-      message: "Optional authentication failed",
-    });
-  }
-};
