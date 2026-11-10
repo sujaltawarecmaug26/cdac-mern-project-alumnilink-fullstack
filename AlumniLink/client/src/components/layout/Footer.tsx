@@ -1,35 +1,10 @@
-import { Box, Container, Stack, Typography } from "@mui/material";
-
 export function Footer() {
   return (
-    <Box
-      component="footer"
-      sx={{
-        mt: "auto",
-        borderTop: "1px solid rgba(241, 227, 211, 0.7)",
-        backgroundColor: "rgba(255, 255, 255, 0.6)",
-      }}
-    >
-      <Container maxWidth="lg">
-        <Box
-          sx={{
-            py: 3,
-            display: "flex",
-            flexDirection: { xs: "column", sm: "row" },
-            alignItems: { xs: "flex-start", sm: "center" },
-            justifyContent: "space-between",
-            gap: 1,
-          }}
-        >
-          <Typography variant="body2" sx={{ color: "#8B7766" }}>
-            AlumniLink · Placement & Alumni Relations
-          </Typography>
-
-          <Typography variant="body2" sx={{ color: "#8B7766" }}>
-            A trusted student–alumni job network
-          </Typography>
-        </Box>
-      </Container>
-    </Box>
+    <footer className="mt-auto border-t border-sand/70 bg-white/60">
+      <div className="mx-auto flex max-w-6xl flex-col gap-1 px-4 py-6 text-sm text-muted sm:flex-row sm:items-center sm:justify-between">
+        <span>AlumniLink · Placement & Alumni Relations</span>
+        <span>A trusted student–alumni job network</span>
+      </div>
+    </footer>
   );
 }
